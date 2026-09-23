@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en" class="lenis lenis-smooth">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elvis — Frontend & Software Engineer</title>
+    <!-- Tailwind is NOT loaded via CDN here on purpose: your package.json already
+         has tailwindcss/postcss/autoprefixer as devDependencies, and main.css
+         has real @tailwind directives. Vite's built-in PostCSS integration
+         compiles those at build/dev time (see postcss.config.js + tailwind.config.js).
+         Loading the v4 browser CDN script on top of that ran two different
+         Tailwind engines against the same page at once — removed. -->
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet"/>
+    <!-- Favicon: swap the letter "E" below for your own initial -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2314171b'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23f6f1e7' font-family='system-ui' font-weight='800'>E</text></svg>">
+    <!-- GSAP 3.13 — the release that folded every formerly-paid Club GSAP
+         plugin (SplitText, Flip, MorphSVG, etc.) into the free core. You
+         were pinned to 3.12.5; bumped here since nothing in this file uses
+         an API that changed, so it's a safe, free upgrade. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/TextPlugin.min.js"></script>
+    <!-- Lenis for Smooth Scrolling -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <!-- Leaflet (functional location map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="./src/main.css">
+</head>
+<body class="antialiased">
+    <!-- Custom Cursor -->
+    <div class="cursor-dot hidden md:block"></div>
+    <div class="cursor-outline hidden md:block"></div>
+    <!-- Splash Screen -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader-stage">
+            <h1 class="loader-name" id="loader-name">Elvis Maduike Edeh</h1>
+            <div class="loader-role-mask">
+                <div class="loader-role font-mono" id="loader-role">Frontend Engineer</div>
+            </div>
+        </div>
+        <div class="loader-progress-wrap">
+            <div class="loader-progress-track">
+                <div class="loader-progress-fill" id="loader-progress-fill"></div>
+            </div>
+            <div class="loader-percent font-mono" id="loader-percent">0%</div>
+        </div>
+    </div>
+    <!-- The curtain main.js already animates via #loader-curtain — this
+         element didn't exist before, so that tween had nothing to move and
+         the teal wipe never appeared. It's a real, separate element now. -->
+    <div class="loader-curtain" id="loader-curtain"></div>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full p-8 flex justify-between items-center z-50 mix-blend-difference text-cream opacity-0" id="navbar">
+        <div class="text-2xl font-black tracking-tighter uppercase cursor-pointer hover:opacity-70 transition-opacity">Elvis</div>
+        <div class="hidden md:flex gap-8 font-mono text-sm">
+            <a href="#about" class="hover:underline underline-offset-4">ABOUT</a>
+            <a href="#works" class="hover:underline underline-offset-4">WORKS</a>
+            <a href="#why" class="hover:underline underline-offset-4">WHY</a>
+            <a href="#contact" class="hover:underline underline-offset-4">SAY HI</a>
+        </div>
+        <a href="#contact" class="magnetic-btn text-xs font-mono border border-[#f6f1e7]/30 hover:border-[#f6f1e7] px-3 py-1 rounded-full transition-colors">
+            Start a Project
+        </a>
+    </nav>
+    <main class="relative z-10 w-full overflow-hidden">
+        <!-- Hero Section -->
+        <section class="min-h-screen flex flex-col justify-center relative px-6 md:px-20 pt-24 grid-bg">
+            <!-- Interactive cursor-reactive dot grid — skipped on reduced-motion, toned down on touch -->
+            <canvas id="hero-grid" class="hero-grid-canvas" aria-hidden="true"></canvas>
+            <!-- Background Parallax Text -->
+            <div class="absolute top-1/4 -right-20 text-[20vw] font-bold text-[#0d6e68]/[0.07] pointer-events-none select-none leading-none z-0 parallax-element" data-speed="0.2">
+               GUUDIE
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                <div class="order-2 lg:order-1 space-y-6">
+                    <div class="overflow-hidden">
+                        <h2 class="text-xl text-muted-cream font-mono hero-reveal">Greeting, I am</h2>
+                    </div>
+                    <div class="relative">
+                        <h1 class="text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.8] mb-4">
+                            <div class="overflow-hidden"><span class="block hero-reveal">Elvis</span></div>
+                            <div class="overflow-hidden"><span class="block hero-reveal text-stroke">Maduike</span></div>
+                            <div class="overflow-hidden"><span class="block hero-reveal">Edeh</span></div>
+                        </h1>
+                    </div>
+                    <div class="min-h-[2rem] flex items-center gap-2">
+                        <span class="w-2 h-2 bg-teal rounded-full animate-pulse shrink-0"></span>
+                        <span class="text-sm sm:text-lg md:text-2xl font-mono whitespace-nowrap" id="typewriter"></span>
+                    </div>
+                    <div class="pt-8 flex gap-6 hero-reveal">
+                        <a href="#contact" class="magnetic-btn btn-primary px-10 py-4 font-bold shadow-[8px_8px_0px_0px_rgba(13,110,104,0.25)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]">
+                            START A PROJECT
+                        </a>
+                        <a href="#about" class="magnetic-btn btn-secondary px-10 py-4 font-bold">
+                            VIEW PROFILE
+                        </a>
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2 flex justify-center relative">
+                    <div class="hero-img-container w-full max-w-md aspect-[4/5] relative overflow-hidden group">
+                        <div class="hero-glow absolute -inset-10 -z-10"></div>
+                        <img src="/bb.JPG" alt="Elvis Maduike Edeh" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out">
+                        <!-- Overlay Lines -->
+                        <div class="absolute inset-0 border border-cream pointer-events-none"></div>
+                        <div class="absolute bottom-4 left-4 bg-paper/90 backdrop-blur px-4 py-2 text-xs font-mono font-bold border border-ink text-ink">
+                            SCROLL TO EXPLORE
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 animate-fade-in-up" style="animation-delay: 2s;">
+                <div class="w-[1px] h-20 bg-gradient-to-b from-transparent to-[#14171b]"></div>
+            </div>
+        </section>
+        <!-- Marquee -->
+        <div class="py-12 bg-ink text-cream overflow-hidden border-y border-cream rotate-[-2deg] scale-105 z-20 relative">
+            <div class="flex whitespace-nowrap marquee-track">
+                <span class="text-6xl font-black font-mono mx-8 tracking-tighter">CODING • WEB DEVELOPMENT • CREATIVE •</span>
+                <span class="text-6xl font-black font-mono mx-8 tracking-tighter">CODING •  WEB DEVELOPMENT • CREATIVE •</span>
+            </div>
+        </div>
+        <!-- Bio & Map Section -->
+        <section id="about" class="py-32 relative">
+            <div class="container mx-auto px-6 md:px-20">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                    <div>
+                        <span class="inline-block border border-ink px-4 py-1 rounded-full text-sm font-mono mb-8" data-gsap="fade">LOCATION</span>
+                        <h2 class="text-5xl md:text-7xl font-black mb-8 leading-tight" data-gsap="slide-up">
+                            BUILDING WITH <br>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#0d6e68] to-[#14171b]">PURPOSE</span>
+                        </h2>
+                        <p class="text-xl text-muted-cream leading-relaxed mb-10 max-w-md" data-gsap="fade">
+                            A frontend and software engineer focused on building fast, accessible, and thoughtfully animated interfaces, where clean code meets clean design.
+                        </p>
+                        <!-- Stats -->
+                        <div class="grid grid-cols-2 gap-8 mb-12">
+                            <div class="border-l-2 border-[#14171b] pl-6" data-gsap="fade">
+                                <div class="text-4xl font-bold mb-2" id="dynamic-projects">0+</div>
+                                <div class="text-sm font-mono text-muted-cream">PROJECTS DONE</div>
+                            </div>
+                            <div class="border-l-2 border-[#14171b] pl-6" data-gsap="fade">
+                                <div class="text-4xl font-bold mb-2" id="dynamic-exp">0+</div>
+                                <div class="text-sm font-mono text-muted-cream">YEARS EXP.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Functional Location Map (Leaflet) -->
+                    <div id="map-container" class="relative h-[400px] md:h-[500px] map-shell card-radius overflow-hidden">
+                        <div class="absolute top-4 right-4 z-[400] text-[10px] font-mono text-cream bg-ink-2/80 backdrop-blur px-3 py-1.5 rounded-full border border-cream pointer-events-none">
+                            BASED IN LAGOS, NG
+                        </div>
+                        <div id="leaflet-map" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Live Local Time Section -->
+        <section class="py-20 bg-ink text-cream relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                <div class="w-full h-full grid-bg invert"></div>
+            </div>
+            <div class="container mx-auto px-6 text-center relative z-10">
+                <div class="mb-12">
+                    <h3 class="text-sm font-mono uppercase tracking-[0.3em] text-muted-ink mb-2">Currently Available</h3>
+                    <h2 class="text-3xl md:text-5xl font-bold" data-scramble>LOCAL TIME</h2>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                    <div class="bg-ink-2/60 p-6 border border-cream rounded-2xl hover:border-[#2fd8c9] transition-colors group">
+                        <div class="text-5xl md:text-6xl font-black font-mono time-digit group-hover:scale-110 transition-transform duration-300" id="clock-hours">00</div>
+                        <div class="text-xs uppercase text-muted-ink mt-2">Hours</div>
+                    </div>
+                    <div class="bg-ink-2/60 p-6 border border-cream rounded-2xl hover:border-[#2fd8c9] transition-colors group">
+                        <div class="text-5xl md:text-6xl font-black font-mono time-digit group-hover:scale-110 transition-transform duration-300" id="clock-minutes">00</div>
+                        <div class="text-xs uppercase text-muted-ink mt-2">Minutes</div>
+                    </div>
+                    <div class="bg-teal-bright text-ink p-6 border border-[#2fd8c9] rounded-2xl relative overflow-hidden">
+                        <div class="text-5xl md:text-6xl font-black font-mono time-digit relative z-10" id="clock-seconds">00</div>
+                        <div class="text-xs uppercase mt-2 relative z-10 font-bold">Seconds</div>
+                        <div class="absolute bottom-0 left-0 h-1 bg-ink transition-all duration-1000 ease-linear w-full" id="sec-bar"></div>
+                    </div>
+                    <div class="bg-ink-2/60 p-6 border border-cream rounded-2xl hover:border-[#2fd8c9] transition-colors group">
+                        <div class="text-3xl md:text-4xl font-black font-mono time-digit group-hover:scale-110 transition-transform duration-300" id="clock-day">MON</div>
+                        <div class="text-xs uppercase text-muted-ink mt-2">Day</div>
+                    </div>
+                </div>
+                <div class="mt-12 text-muted-ink font-mono text-xs" id="clock-timezone">
+                    TIMEZONE: SET IN main.js
+                </div>
+            </div>
+        </section>
+        <!-- Horizontal Scroll Works -->
+        <!-- The project cards below are placeholders with stock screenshots for two entries —
+             swap in your own project images before shipping. -->
+        <section id="works" class="bg-paper relative overflow-hidden">
+            <div class="h-screen sticky top-0 flex flex-col justify-center overflow-hidden" id="works-container">
+                <div class="absolute top-10 left-6 md:left-10 z-20 flex flex-wrap items-center gap-3">
+                    <h2 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#14171b] to-[#0d6e68]/40 mr-4" data-scramble>WORKS</h2>
+                </div>
+                <!-- <div class="absolute top-10 right-6 md:right-10 z-20 font-mono text-xs text-muted-cream" id="works-index">01 / 07</div> -->
+                <div class="flex gap-8 md:gap-10 px-6 md:px-20 pl-[8vw] md:pl-[20vw] pr-[6vw] md:pr-[10vw]" id="works-wrapper" style="perspective: 800px;">
+                    <!-- Card 1 -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer" data-category="web" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-light absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/Moana.JPG" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">WEB DEV / AI</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">NovaSparkS</h3>
+                                <p class="text-muted-cream font-mono text-sm">Full stack Streaming Platform: Novasparks.xyz.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer" data-category="web" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-light absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/resumebuilder.JPG" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">AI</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">NS AI Resume Builder</h3>
+                                <p class="text-muted-cream font-mono text-sm">An AI Resume Builder that helps you create and improve your resume without making the process complicated.
+
+You get 18 free credits to start with, and when you need more, you can purchase credits securely through Stripe.
+
+There’s also an option to use your own API instead, so you can keep generating without having to purchase credits from us.
+
+Basically, I wanted to keep it accessible, flexible and affordable.
+https://ns-ai-resume-builder.vercel.app/
+</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer mt-20" data-category="ui" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-dark absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/scripttovideo.JPG" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">AI</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">Script to Video AI</h3>
+                                <p class="text-muted-cream font-mono text-sm">Turns a written script into an edited video automatically.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer" data-category="web" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-light absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/narita.JPG" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">WEB DEV</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">Narita Portfolio</h3>
+                                <p class="text-muted-cream font-mono text-sm">A Japanese Client Portfoilio.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 4 -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer" data-category="ai" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-light absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/offline.png" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">WEB DEV</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">Space Tourism</h3>
+                                <p class="text-muted-cream font-mono text-sm">Generates original background music from a text prompt.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 5 -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer" data-category="web" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-light absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/easypay.JPG" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">WEB DEV</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">EasyPay Bank Landing Page</h3>
+                                <p class="text-muted-cream font-mono text-sm">Banking App Demo</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 6 (dark variant) -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer mt-20" data-category="ui" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-dark absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-ink-2 mb-6 relative rounded-xl">
+                                <img src="/offline.png" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100 opacity-80 group-hover:opacity-100">
+                                <div class="work-tag absolute top-2 right-2 bg-cream text-ink text-xs px-2 py-1 rounded-full">Ai</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">Script to Music</h3>
+                                <p class="text-muted-ink font-mono text-sm">Minimalist dashboard design for data visualization.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-cream pt-4">
+                                <span class="work-tag text-xs text-muted-ink">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card 7 -->
+                    <div class="work-item w-[80vw] md:w-[560px] h-[58vh] relative group cursor-pointer mt-20" data-category="ui" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <div class="work-card-dark absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 overflow-hidden bg-cream mb-6 relative rounded-xl">
+                                <img src="/offline.png" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                                <div class="work-tag absolute top-2 right-2 bg-ink text-cream text-xs px-2 py-1 rounded-full">AI</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">Face Swap AI</h3>
+                                <p class="text-muted-cream font-mono text-sm">Real-time face-swapping tool built for short-form video.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-ink pt-4">
+                                <span class="work-tag text-xs text-muted-cream">Guudiecodes</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Final card: mirrors the layout of every project card above it
+                         (icon panel, title, blurb, footer row) instead of floating
+                         loose content in an empty box — keeps it in scale and rhythm
+                         with the row, and still counts toward the scroll-length math. -->
+                    <div class="work-item work-item-github w-[80vw] md:w-[400px] h-[58vh] relative group cursor-pointer" data-hidden="false">
+                        <div class="work-shadow"></div>
+                        <a href="https://github.com/yourusername" target="_blank" aria-label="View more projects on GitHub"
+                           class="magnetic-btn work-card-dark absolute inset-0 p-8 flex flex-col justify-between transform group-hover:-translate-y-2 transition-transform duration-500">
+                            <div class="w-full h-3/5 relative rounded-xl bg-ink-2 mb-6 overflow-hidden flex items-center justify-center">
+                                <i class="ri-github-fill github-end-mark" aria-hidden="true"></i>
+                                <i class="ri-github-fill github-end-icon relative z-10"></i>
+                                <div class="work-tag absolute top-2 right-2 bg-cream text-ink text-xs px-2 py-1 rounded-full">OPEN SOURCE</div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl md:text-4xl font-bold mb-2">More on GitHub</h3>
+                                <p class="text-muted-ink font-mono text-sm">The rest of the repos — experiments, forks, work in progress.</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-cream pt-4">
+                                <span class="work-tag text-xs text-muted-ink">View all repos</span>
+                                <i class="ri-arrow-right-up-line text-2xl group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="absolute bottom-10 left-6 right-6 md:left-20 md:right-20 z-20">
+                    <div class="works-progress-track">
+                        <div class="works-progress-fill" id="works-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Services with Timeline Line -->
+        <section class="py-32 relative">
+            <div class="timeline-line"></div>
+            <div class="timeline-progress" id="scroll-line"></div>
+            <div class="container mx-auto px-6 max-w-4xl relative z-10">
+                <div class="text-center mb-20">
+                    <h2 class="text-4xl font-bold bg-cream inline-block px-4 relative z-20" data-scramble>Stacks</h2>
+                </div>
+                <div class="space-y-24">
+                    <!-- Service 1 -->
+                    <div class="flex flex-col md:flex-row items-center gap-10 group" data-gsap="service-item">
+                        <div class="w-full md:w-1/2 flex justify-end order-1 md:order-1">
+                            <div class="service-card p-8 border border-ink bg-paper card-radius shadow-lg hover:shadow-[10px_10px_0px_0px_rgba(13,110,104,0.9)] transition-all duration-300 w-full md:w-80">
+                                <i class="ri-code-s-slash-fill text-5xl mb-4 text-teal"></i>
+                                <h3 class="text-2xl font-bold mb-2">Coding</h3>
+                                <p class="text-sm text-muted-cream">Frontend & Backend architecture using modern frameworks. Clean, scalable code.</p>
+                            </div>
+                        </div>
+                        <div class="service-dot w-4 h-4 bg-teal rounded-full border-4 border-cream z-20 order-2 md:order-2"></div>
+                        <div class="w-full md:w-1/2 order-3 md:order-3 pl-0 md:pl-10">
+                            <ul class="service-list font-mono text-sm space-y-2 text-muted-cream group-hover:text-ink transition-colors">
+                                <li>HTML / CSS / JS</li>
+                                <li>React.js / Vue.js / Next.js</li>
+                                <li>Node.js / Express / Php</li>
+                                <li>Tailwind CSS / Bootstrap</li>
+                                <li>Sass / Scss</li>
+                            </ul>
+                        </div>
+                    </div>
+                   
+
+                    <!-- Service 2 -->
+                    <div class="flex flex-col md:flex-row items-center gap-10 group" data-gsap="service-item">
+                        <div class="w-full md:w-1/2 flex justify-end order-1 md:order-1">
+                            <div class="service-card p-8 border border-ink bg-paper card-radius shadow-lg hover:shadow-[10px_10px_0px_0px_rgba(13,110,104,0.9)] transition-all duration-300 w-full md:w-80">
+                                <i class="ri-pen-nib-fill text-5xl mb-4 text-teal"></i>
+                                <h3 class="text-2xl font-bold mb-2">Youtube Automation</h3>
+                                <p class="text-sm text-muted-cream">Visual storytelling through branding, logos, and digital illustrations.</p>
+                            </div>
+                        </div>
+                        <div class="service-dot w-4 h-4 bg-teal rounded-full border-4 border-cream z-20 order-2 md:order-2"></div>
+                        <div class="w-full md:w-1/2 order-3 md:order-3 pl-0 md:pl-10">
+                            <ul class="service-list font-mono text-sm space-y-2 text-muted-cream group-hover:text-ink transition-colors">
+                                <li>Script To Video</li>
+                                <li>Talking Head</li>
+                                <li>B roll</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Why — the manifesto section. A read-along paragraph that lights up
+             word by word as it scrolls past (no pinning — the safest pattern
+             for a long-form statement, and it stays smooth on mobile) plus a
+             short typed-out reasons list reusing the hero's typewriter
+             technique. Swap the copy below for your own words. -->
+        <section id="why" class="py-32 bg-ink text-cream relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                <div class="w-full h-full grid-bg invert"></div>
+            </div>
+            <!-- "Signal" — an idea-to-reality node network. Scattered and dim
+                 at rest, it resolves into an ordered, glowing web as the
+                 section scrolls past, in step with the manifesto lighting
+                 up below. The diagram is the argument, not decoration. -->
+            <canvas id="why-signal" class="why-signal-canvas" aria-hidden="true"></canvas>
+            <div class="container mx-auto px-6 md:px-20 relative z-10 max-w-4xl">
+                <div class="mb-12" id="why-intro">
+                    <span class="inline-block border border-cream px-4 py-1 rounded-full text-sm font-mono mb-6">WHY I BUILD</span>
+                    <h2 class="text-4xl md:text-6xl font-black" data-scramble>Not Just Code</h2>
+                </div>
+                <p class="why-manifesto text-2xl md:text-4xl font-medium leading-snug mb-16" data-read-along>
+                    I didn't fall into this by accident. Every interface I ship is a small argument that things can work better than they do, faster, clearer, kinder to whoever is on the other side of the screen. That is the whole reason I show up: not motion for its own sake, but closing the gap between an idea and something real, a little more each time.
+                </p>
+                <div class="why-reasons space-y-4 font-mono text-sm md:text-base">
+                    <div class="why-reason flex gap-4 items-baseline border-t border-cream pt-4">
+                        <span class="why-reason-fill" aria-hidden="true"></span>
+                        <span class="text-muted-ink">01</span>
+                        <span class="why-reason-text text-cream">Curiosity that never really turned off.</span>
+                    </div>
+                    <div class="why-reason flex gap-4 items-baseline border-t border-cream pt-4">
+                        <span class="why-reason-fill" aria-hidden="true"></span>
+                        <span class="text-muted-ink">02</span>
+                        <span class="why-reason-text text-cream">Solving a real problem beats writing "clever" code.</span>
+                    </div>
+                    <div class="why-reason flex gap-4 items-baseline border-t border-cream pt-4">
+                        <span class="why-reason-fill" aria-hidden="true"></span>
+                        <span class="text-muted-ink">03</span>
+                        <span class="why-reason-text text-cream">The small details are where trust actually gets built.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Testimonials — the section you asked about: a placeholder social-proof
+             block added between Stacks and Contact. Swap the quotes/names for
+             real feedback from clients or collaborators when you have it. -->
+        <section id="testimonials" class="py-24 relative">
+            <div class="container mx-auto px-6 md:px-20">
+                <div class="text-center mb-16" data-gsap="fade-once">
+                    <span class="inline-block border border-ink px-4 py-1 rounded-full text-sm font-mono mb-6">FEEDBACK</span>
+                    <h2 class="text-4xl md:text-6xl font-black" data-scramble>What People Say</h2>
+                </div>
+                <div class="testimonials-wrap relative">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 testimonials-blur" aria-hidden="true" inert>
+                        <div class="testimonial-card p-8 border border-ink bg-paper card-radius">
+                            <i class="ri-double-quotes-l text-3xl text-teal mb-4 block"></i>
+                            <p class="text-muted-cream leading-relaxed mb-6">Placeholder quote — replace with real feedback about working with you: what the project was, and what stood out.</p>
+                            <div class="font-mono text-sm">
+                                <div class="font-bold text-ink">Name Surname</div>
+                                <div class="text-muted-cream">Role, Company</div>
+                            </div>
+                        </div>
+                        <div class="testimonial-card p-8 border border-ink bg-paper card-radius">
+                            <i class="ri-double-quotes-l text-3xl text-teal mb-4 block"></i>
+                            <p class="text-muted-cream leading-relaxed mb-6">Placeholder quote — replace with real feedback about working with you: what the project was, and what stood out.</p>
+                            <div class="font-mono text-sm">
+                                <div class="font-bold text-ink">Name Surname</div>
+                                <div class="text-muted-cream">Role, Company</div>
+                            </div>
+                        </div>
+                        <div class="testimonial-card p-8 border border-ink bg-paper card-radius">
+                            <i class="ri-double-quotes-l text-3xl text-teal mb-4 block"></i>
+                            <p class="text-muted-cream leading-relaxed mb-6">Placeholder quote — replace with real feedback about working with you: what the project was, and what stood out.</p>
+                            <div class="font-mono text-sm">
+                                <div class="font-bold text-ink">Name Surname</div>
+                                <div class="text-muted-cream">Role, Company</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonials-overlay">
+                        <i class="ri-hourglass-line text-3xl text-teal mb-3"></i>
+                        <p class="font-mono text-sm md:text-base font-bold text-ink">Testimonials coming soon</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Contact Section -->
+        <section id="contact" class="py-32 bg-ink text-cream relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+                <h2 class="text-6xl md:text-9xl font-black mb-12 hover:tracking-wide transition-all duration-500 cursor-default" data-scramble>Start a Project</h2>
+                <div class="flex flex-wrap justify-center gap-5 mb-20">
+                    <a href="https://github.com/@Guudiecodes" target="_blank" aria-label="GitHub" class="magnetic-btn social-icon">
+                        <i class="ri-github-fill"></i>
+                    </a>
+                    <a href="mailto:paidwork165@gmail.com" aria-label="Email" class="magnetic-btn social-icon">
+                        <i class="ri-mail-send-fill"></i>
+                    </a>
+                    <a href="https://x.com/@Guudiecodes" target="_blank" aria-label="X (Twitter)" class="magnetic-btn social-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3L21 21M21 3L3 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                    </a>
+                    <a href="https://discord.com/users/@Guudiecodes" target="_blank" aria-label="Discord" class="magnetic-btn social-icon">
+                        <i class="ri-discord-line"></i>
+                    </a>
+                    <a href="https://instagram.com/@Guudiecodes" target="_blank" aria-label="Instagram" class="magnetic-btn social-icon">
+                        <i class="ri-instagram-line"></i>
+                    </a>
+                    <a href="https://threads.net/@Guudiecodes" target="_blank" aria-label="Threads" class="magnetic-btn social-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3c-4 0-6.5 2.6-6.5 6.2 0 2.4 1.3 4.1 3.4 4.1 1.7 0 2.7-1 2.9-2.4.2-1.3-.5-2.3-1.8-2.3-.9 0-1.4.5-1.4 1.2M12 3c4 0 6.8 2.7 6.8 7.3 0 5.7-3.4 9.7-8.6 9.7-3.9 0-6.9-2.1-6.9-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                </div>
+                <div class="w-full max-w-2xl border-t border-cream pt-8 flex flex-col md:flex-row justify-between items-center text-muted-ink font-mono text-xs gap-2">
+                    <p>&copy; 2026 Elvis Maduike Edeh. All rights reserved.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- External JSS. No longer type="module" — nothing in main.js uses
+         import/export, and type="module" is exactly what was making Chrome
+         block the whole file with a CORS error when this page is opened
+         directly (file://) instead of through a local server. defer keeps
+         the "run after the DOM is parsed" behavior without that block. -->
+    <script src="./src/main.js" defer></script>
+
+    <script> setTimeout(function () { var loader = document.getElementById('loader'); if (loader) { loader.style.transition = 'opacity 0.3s ease'; loader.style.opacity = '0'; setTimeout(function () { loader.style.display = 'none'; }, 300); } }, 4000); </script>
+</body>
+</html>

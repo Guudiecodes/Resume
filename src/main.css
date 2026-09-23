@@ -1,0 +1,540 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;800&family=Space+Mono:wght@400;700&display=swap');
+
+/* Tailwind Directives - Required for PostCSS processing */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   DESIGN TOKENS
+   Warm, editorial-tech palette: unbleached cream + deep ink,
+   anchored by a single committed accent (teal) with a small
+   warm counter-accent (gold) reserved for calls to action.
+   ========================================================= */
+:root {
+    --ink: #14171b;
+    --ink-2: #1d2126;
+    --ink-3: #262b31;
+    --cream: #f6f1e7;
+    --paper: #fdfbf5;
+    --teal: #0d6e68;
+    --teal-mid: #12968c;
+    --teal-bright: #2fd8c9;
+    --gold: #e6a13b;
+    --gold-dark: #c27f1e;
+    --muted-on-cream: #706b5d;
+    --muted-on-ink: #a79f8e;
+    --line-on-cream: rgba(20, 23, 27, 0.12);
+    --line-on-ink: rgba(246, 241, 231, 0.14);
+    --r-card: 20px;
+    --r-pill: 999px;
+
+    --bg-color: var(--cream);
+    --text-main: var(--ink);
+    --accent: var(--teal);
+}
+html.lenis, html.lenis body {
+    height: auto;
+}
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+.lenis.lenis-scrolling iframe {
+    pointer-events: none;
+}
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+    opacity: 0; /* Init hidden, revealed by JS */
+    visibility: hidden;
+}
+h1, h2, h3, .font-display {
+    font-family: 'Space Grotesk', sans-serif;
+}
+::selection {
+    background-color: var(--ink);
+    color: var(--cream);
+}
+:focus-visible {
+    outline: 2px solid var(--teal-bright);
+    outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* ---------- Semantic color utilities (theme-driven, single source of truth) ---------- */
+.bg-ink { background-color: var(--ink); }
+.bg-ink-2 { background-color: var(--ink-2); }
+.bg-cream { background-color: var(--cream); }
+.bg-paper { background-color: var(--paper); }
+.bg-teal { background-color: var(--teal); }
+.bg-teal-bright { background-color: var(--teal-bright); }
+.bg-gold { background-color: var(--gold); }
+.text-ink { color: var(--ink); }
+.text-cream { color: var(--cream); }
+.text-muted-cream { color: var(--muted-on-cream); }
+.text-muted-ink { color: var(--muted-on-ink); }
+.text-teal { color: var(--teal-mid); }
+.text-gold { color: var(--gold); }
+.border-ink { border-color: var(--line-on-cream); }
+.border-cream { border-color: var(--line-on-ink); }
+.pill { border-radius: var(--r-pill); }
+.card-radius { border-radius: var(--r-card); }
+.btn-primary {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: var(--r-pill);
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+.btn-primary:hover { background: var(--teal); color: var(--cream); }
+.btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: var(--r-pill);
+    transition: background-color 0.3s, color 0.3s;
+}
+.btn-secondary:hover { background: var(--ink); color: var(--cream); }
+
+/* Custom Cursor */
+.cursor-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--teal-bright);
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 10000;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+.cursor-outline {
+    width: 50px;
+    height: 50px;
+    border: 1px solid rgba(20, 23, 27, 0.25);
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 9999;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s, background-color 0.3s, border-color 0.3s;
+}
+/* Loader */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ink);
+    z-index: 20000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--cream);
+    flex-direction: column;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.loader-curtain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--teal);
+    z-index: 19999;
+    transform: translateY(100%);
+}
+/* ---------- Preloader intro (name reveal + cycling role line) ---------- */
+.loader-stage {
+    text-align: center;
+    padding: 0 1.5rem;
+}
+.loader-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    /* Fluid sizing: never overflows a narrow phone, never looks small on desktop */
+    font-size: clamp(2rem, 7vw, 5.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    white-space: nowrap;
+}
+.loader-letter {
+    display: inline-block;
+    will-change: transform, opacity;
+}
+/* SplitText's `mask` option wraps each split unit in its own clipping
+   span with these auto-generated class names (line-mask/word-mask/char-mask)
+   and sets overflow:hidden on it inline — this rule is a harmless safety
+   net so the clip still holds even if that inline style is ever stripped. */
+.line-mask, .word-mask, .char-mask {
+    overflow: hidden;
+}
+.loader-role-mask {
+    overflow: hidden;
+    height: 1.5em;
+    margin-top: 0.75rem;
+}
+.loader-role {
+    font-size: clamp(0.85rem, 2vw, 1.15rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-on-ink);
+}
+.loader-progress-wrap {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(280px, 70vw);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.loader-progress-track {
+    flex: 1;
+    height: 2px;
+    background: var(--line-on-ink);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+}
+.loader-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--teal-bright);
+}
+.loader-percent {
+    font-size: 0.75rem;
+    color: var(--muted-on-ink);
+    min-width: 2.5em;
+    text-align: right;
+}
+/* Typography & Utilities */
+.font-mono { font-family: 'Space Mono', monospace; }
+/* Initial states for animations */
+.hero-reveal, .hero-img-container {
+    opacity: 0;
+    visibility: hidden;
+}
+/* Grid Background */
+.grid-bg {
+    background-image:
+        linear-gradient(rgba(20,23,27,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20,23,27,0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+.grid-bg.invert {
+    background-image:
+        linear-gradient(rgba(246,241,231,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(246,241,231,0.08) 1px, transparent 1px);
+}
+/* Ambient glow used once, behind the hero portrait, to spend our "boldness" in one place */
+.hero-glow {
+    background: radial-gradient(closest-side, rgba(13,110,104,0.22), rgba(13,110,104,0));
+    filter: blur(10px);
+}
+/* Interactive cursor-reactive dot grid, drawn behind the hero content */
+.hero-grid-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ---------- Functional Map (About section) ---------- */
+.map-shell {
+    background: var(--ink);
+    border: 1px solid var(--line-on-ink);
+}
+.leaflet-container {
+    background: var(--ink) !important;
+    font-family: 'Inter', sans-serif !important;
+    filter: saturate(0.5) brightness(0.95) sepia(0.12) hue-rotate(130deg);
+}
+.leaflet-control-attribution {
+    background: rgba(20,23,27,0.7) !important;
+    color: var(--muted-on-ink) !important;
+    font-size: 9px !important;
+}
+.leaflet-control-attribution a { color: var(--teal-bright) !important; }
+.leaflet-control-zoom a {
+    background: var(--ink-2) !important;
+    color: var(--cream) !important;
+    border: 1px solid var(--line-on-ink) !important;
+}
+.leaflet-control-zoom a:hover {
+    background: var(--teal) !important;
+    color: var(--cream) !important;
+}
+.map-pin-marker {
+    width: 18px; height: 18px;
+    background: var(--teal-bright);
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(47,216,201,0.25);
+}
+.map-pin-pulse {
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    border: 1px solid var(--teal-bright);
+    animation: mapPulse 2.4s ease-out infinite;
+}
+@keyframes mapPulse {
+    0% { transform: scale(0.4); opacity: 0.9; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+.map-popup .leaflet-popup-content-wrapper {
+    background: var(--ink-2);
+    color: var(--cream);
+    border-radius: 12px;
+    border: 1px solid var(--line-on-ink);
+}
+.map-popup .leaflet-popup-tip { background: var(--ink-2); }
+.map-popup .leaflet-popup-content { font-family: 'Space Mono', monospace; font-size: 12px; margin: 10px 12px; }
+
+/* Magnetic Button */
+.magnetic-btn {
+    display: inline-block;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+/* Outlined headline treatment — an active typographic moment, not a neutral label */
+.text-stroke {
+    -webkit-text-stroke: 2px var(--ink);
+    color: transparent;
+}
+
+/* Image Mask */
+.hero-img-container {
+    clip-path: polygon(10% 0, 100% 0, 100% 90%, 0% 100%);
+    transition: clip-path 0.5s;
+}
+.hero-img-container:hover {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+/* Clock Digits */
+.time-digit {
+    font-variant-numeric: tabular-nums;
+}
+/* Timeline Line */
+.timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: var(--line-on-cream);
+    transform: translateX(-50%);
+    z-index: 0;
+}
+.timeline-progress {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 0%;
+    background: linear-gradient(to bottom, var(--teal), var(--teal-bright));
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+/* ---------- Works Carousel ---------- */
+#works-container {
+    background: var(--paper);
+    cursor: grab;
+    /* Desktop had NO top clearance at all (only the mobile media query below
+       gave it padding-block), so the pinned carousel's first card started
+       flush against whatever heading sits right above this container —
+       reading as a collision the instant the pin engaged. This is the fix:
+       give the pinned area its own breathing room and stacking context on
+       every viewport, not just mobile. */
+    padding-top: clamp(4rem, 8vw, 7.5rem);
+    position: relative;
+    z-index: 1;
+}
+.work-item {
+    will-change: transform;
+    flex-shrink: 0;
+}
+/* Single source of truth for the "stacked card" shadow layer behind every
+   work card — every card references this one class now, so the rotation
+   and opacity can never drift out of sync between cards again. */
+.work-shadow {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 110, 104, 0.15);
+    border-radius: var(--r-card);
+    transform: rotate(2deg);
+    transition: transform 0.5s;
+}
+.group:hover .work-shadow {
+    transform: rotate(0deg);
+}
+.work-card-light {
+    background: var(--paper);
+    border: 1px solid var(--line-on-cream);
+    border-radius: var(--r-card);
+}
+.work-card-dark {
+    background: var(--ink);
+    color: var(--cream);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--r-card);
+}
+.work-tag {
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.02em;
+}
+.works-progress-track {
+    height: 3px;
+    background: var(--line-on-cream);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+}
+.works-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--teal), var(--teal-bright));
+    border-radius: var(--r-pill);
+}
+.work-item[data-hidden="true"] { display: none !important; }
+
+/* GitHub end-card: a big, faint watermark icon sits behind a properly
+   sized foreground icon in the same "image zone" every other card has,
+   so nothing floats loose or reads as oversized/empty. */
+.github-end-mark {
+    position: absolute;
+    font-size: 7rem;
+    color: var(--line-on-ink);
+    transform: rotate(-10deg);
+    line-height: 1;
+    pointer-events: none;
+    transition: transform 0.5s ease;
+}
+.group:hover .github-end-mark {
+    transform: rotate(-4deg) scale(1.06);
+}
+.github-end-icon {
+    font-size: 2.5rem;
+    color: var(--teal-bright);
+}
+
+/* Below 900px, main.js skips the pinned scroll-jack entirely (it's the #1 cause
+   of janky, fighting-your-thumb carousels on phones) and this takes over:
+   a plain, native, swipeable, snap-scrolling row. */
+@media (max-width: 899px) {
+    #works-container {
+        position: static;
+        height: auto;
+        min-height: 0;
+        padding-block: 3rem 1rem;
+    }
+    #works-wrapper {
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    #works-wrapper::-webkit-scrollbar { display: none; }
+    .work-item { scroll-snap-align: center; }
+}
+
+/* ---------- Testimonials: still in development ---------- */
+/* The cards are real placeholder copy, not real client feedback yet, so
+   they're blurred/dimmed and taken out of the tab order (aria-hidden +
+   inert) rather than presented as if they were finished content. */
+.testimonials-blur {
+    filter: blur(6px);
+    opacity: 0.45;
+    user-select: none;
+}
+.testimonials-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* ---------- Footer social icons ---------- */
+.social-icon {
+    width: 3.5rem; height: 3.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--line-on-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    color: var(--cream);
+    transition: background-color 0.3s, color 0.3s, transform 0.3s, border-color 0.3s;
+}
+.social-icon:hover {
+    background: var(--teal-bright);
+    color: var(--ink);
+    border-color: var(--teal-bright);
+    transform: translateY(-4px);
+}
+.social-icon svg { width: 1.4rem; height: 1.4rem; }
+
+/* ---------- Why / Manifesto section ---------- */
+/* SplitText creates one inline span per word (see main.js); GSAP sets and
+   animates their opacity/transform/filter/color directly, so this rule
+   only needs to keep them inline-block and hint the browser about what's
+   changing. With reduced motion (or if SplitText fails to load) the
+   paragraph is never split, so it just renders as plain, fully-readable
+   text — nothing here applies. */
+.why-manifesto .word {
+    display: inline-block;
+    will-change: opacity, transform, filter, color;
+}
+.why-signal-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Each reason's top border lights up like a closing circuit trace once
+   its line finishes typing — feedback the plain static border-t never gave. */
+.why-reason { position: relative; }
+.why-reason-fill {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--teal), var(--teal-bright));
+    box-shadow: 0 0 8px var(--teal-bright);
+    border-radius: var(--r-pill);
+}
+
+/* Custom Tailwind Animations */
+@layer utilities {
+    .animate-spin-slow { animation: spin 20s linear infinite; }
+    .animate-fade-in-up { animation: fadeInUp 1s ease-out forwards; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+}
