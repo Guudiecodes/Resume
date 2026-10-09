@@ -555,7 +555,7 @@ https://ns-ai-resume-builder.vercel.app/
          block the whole file with a CORS error when this page is opened
          directly (file://) instead of through a local server. defer keeps
          the "run after the DOM is parsed" behavior without that block. -->
-    <script src="./src/main.js" defer></script>
+    <script type="module" src="/src/main.js"></script>
 
     <script> setTimeout(function () { var loader = document.getElementById('loader'); if (loader) { loader.style.transition = 'opacity 0.3s ease'; loader.style.opacity = '0'; setTimeout(function () { loader.style.display = 'none'; }, 300); } }, 4000); </script>
 </body>
